@@ -1,1 +1,1658 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>たのしい！さんすう＆クイズ 対戦バトル</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (M PLUS Rounded 1c) -->
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            background-color: #f0fdf4;
+            user-select: none;
+        }
+        .bounce-btn {
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+        .bounce-btn:active {
+            transform: scale(0.95);
+        }
+        .custom-shadow {
+            box-shadow: 0 8px 0 rgba(0,0,0,0.15);
+        }
+        .custom-shadow-sm {
+            box-shadow: 0 4px 0 rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col justify-between">
 
+    <!-- Header -->
+    <header class="bg-amber-400 border-b-4 border-amber-500 p-4 shadow-md sticky top-0 z-20">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div onclick="showView('home')" class="cursor-pointer flex items-center space-x-2">
+                <div class="bg-white p-2 rounded-2xl shadow">
+                    <i class="fa-solid fa-gamepad text-amber-500 text-2xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-black text-white tracking-wider drop-shadow">さんすう＆クイズ★キッズ</h1>
+            </div>
+            
+            <div id="activeGroupBadge" class="hidden bg-amber-500 text-white text-xs md:text-sm font-bold px-3 py-1.5 rounded-full border border-amber-300 flex items-center gap-1.5">
+                <i class="fa-solid fa-users"></i>
+                <span id="currentGroupBadgeName">未選択</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-4xl mx-auto w-full p-4 flex-grow flex flex-col justify-center">
+
+        <!-- VIEW: Home Screen -->
+        <section id="viewHome" class="space-y-6 text-center py-6">
+            <div class="bg-white rounded-3xl p-6 md:p-8 border-4 border-emerald-300 custom-shadow space-y-6">
+                <span class="inline-block bg-emerald-100 text-emerald-700 text-sm font-bold px-4 py-1 rounded-full">
+                    <i class="fa-solid fa-star text-amber-400"></i> みんなであそぼう！
+                </span>
+                <h2 class="text-2xl md:text-4xl font-black text-emerald-600">さんすう＆クイズゲーム</h2>
+                <p class="text-gray-600 text-sm md:text-base font-bold">1人でも、友だちみんなと対戦してもあそべるよ！</p>
+                
+                <div class="pt-2 flex flex-col sm:flex-row justify-center gap-4">
+                    <!-- Solo Game -->
+                    <button onclick="startSoloGame()" class="bounce-btn bg-emerald-500 hover:bg-emerald-600 text-white text-lg font-black py-4 px-6 rounded-2xl border-b-4 border-emerald-700 custom-shadow flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-user text-xl"></i> 1人であそぶ
+                    </button>
+
+                    <!-- Requirement ①: Battle with Friends Button -->
+                    <button onclick="showView('battleMenu')" class="bounce-btn bg-rose-500 hover:bg-rose-600 text-white text-xl font-black py-4 px-8 rounded-2xl border-b-4 border-rose-700 custom-shadow flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-users-line text-2xl"></i> 友だちと対戦！
+                    </button>
+                </div>
+            </div>
+
+            <!-- Group Quick Switch & Menu -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Group Join & Select Box -->
+                <div class="bg-white rounded-3xl p-6 border-4 border-sky-300 custom-shadow text-left space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-black text-lg text-sky-600 flex items-center gap-2">
+                            <i class="fa-solid fa-users text-sky-500"></i> 成績グループにさんか
+                        </h3>
+                        <span class="text-xs bg-sky-100 text-sky-700 px-2.5 py-1 rounded-full font-bold">複数所属OK</span>
+                    </div>
+                    <p class="text-xs text-gray-500 font-bold">8けたのコードを入力して成績グループに参加しよう！</p>
+                    
+                    <div class="flex gap-2">
+                        <input type="text" id="joinCodeInput" maxlength="8" placeholder="8けたのコード" 
+                               class="uppercase font-mono tracking-widest text-center text-lg w-full bg-slate-100 border-2 border-slate-300 rounded-xl px-3 py-2 font-black focus:outline-none focus:border-sky-500">
+                        <button onclick="joinGroup()" class="bounce-btn bg-sky-500 hover:bg-sky-600 text-white font-black px-5 py-2 rounded-xl border-b-4 border-sky-700 flex-shrink-0">
+                            はいれる！
+                        </button>
+                    </div>
+
+                    <!-- Joined Groups List -->
+                    <div class="pt-2 border-t border-slate-100">
+                        <span class="text-xs font-bold text-gray-500 block mb-2">★ さんかちゅうのグループ:</span>
+                        <div id="joinedGroupsContainer" class="flex flex-wrap gap-2">
+                            <span class="text-xs text-gray-400">（まだグループがありません）</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Group Create Box -->
+                <div class="bg-white rounded-3xl p-6 border-4 border-purple-300 custom-shadow text-left space-y-3 flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-black text-lg text-purple-600 flex items-center gap-2">
+                            <i class="fa-solid fa-plus-circle text-purple-500"></i> あたらしいグループをつくる
+                        </h3>
+                        <p class="text-xs text-gray-500 font-bold mt-1">クラスや友達同士で遊ぶ成績管理グループを新規作成できます。</p>
+                    </div>
+                    
+                    <button onclick="showView('createGroup')" class="bounce-btn bg-purple-500 hover:bg-purple-600 text-white font-black py-3 px-4 rounded-xl border-b-4 border-purple-700 w-full text-center flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> グループをさくせいする
+                    </button>
+                </div>
+            </div>
+
+            <!-- Ranking View Button -->
+            <div id="groupDashboardBox" class="hidden bg-amber-100 border-4 border-amber-300 rounded-3xl p-6 text-left space-y-3 custom-shadow">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <div class="text-xs font-bold text-amber-700">選択中の成績グループ</div>
+                        <div id="dashGroupName" class="text-2xl font-black text-amber-900">--</div>
+                        <div id="dashGroupCode" class="text-sm font-mono font-bold text-amber-600">コード: --</div>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="showRankingView()" class="bounce-btn bg-amber-500 hover:bg-amber-600 text-white font-black px-4 py-2 rounded-xl border-b-4 border-amber-700 flex items-center gap-2">
+                            <i class="fa-solid fa-trophy"></i> ランキングを見る
+                        </button>
+                        <button onclick="showAdminModal()" class="bounce-btn bg-slate-700 hover:bg-slate-800 text-white font-black px-4 py-2 rounded-xl border-b-4 border-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-key"></i> かんりしゃ
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Requirement ②: VIEW: Battle Menu (Lobby) -->
+        <section id="viewBattleMenu" class="hidden space-y-6">
+            <div class="bg-white rounded-3xl p-6 md:p-8 border-4 border-rose-400 custom-shadow space-y-6 max-w-lg mx-auto">
+                <div class="text-center space-y-2">
+                    <span class="bg-rose-100 text-rose-700 text-xs font-black px-3 py-1 rounded-full">リアルタイム対戦</span>
+                    <h2 class="text-2xl font-black text-rose-600 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-users-line"></i> 友だちと対戦！
+                    </h2>
+                </div>
+
+                <!-- Create Room -->
+                <div class="bg-rose-50 border-2 border-rose-200 rounded-2xl p-4 space-y-3">
+                    <h3 class="font-black text-rose-800 text-base">① 新しく対戦の部屋をつくる</h3>
+                    <p class="text-xs text-rose-600 font-bold">あなたが部屋を作って、みんなを招待します。</p>
+                    <div class="space-y-2">
+                        <input type="text" id="hostNickInput" placeholder="あなたのニックネーム" maxlength="10" 
+                               class="w-full bg-white border-2 border-rose-300 rounded-xl px-3 py-2 font-bold text-sm focus:outline-none focus:border-rose-500">
+                        <button onclick="createBattleRoom()" class="bounce-btn w-full bg-rose-500 hover:bg-rose-600 text-white font-black py-3 rounded-xl border-b-4 border-rose-700 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-plus-circle"></i> 新しく部屋を作る
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Join Room -->
+                <div class="bg-sky-50 border-2 border-sky-200 rounded-2xl p-4 space-y-3">
+                    <h3 class="font-black text-sky-800 text-base">② 部屋のコードを入力して入る</h3>
+                    <p class="text-xs text-sky-600 font-bold">友達から教えてもらった8桁の部屋コードを入力します。</p>
+                    <div class="space-y-2">
+                        <input type="text" id="joinRoomCodeInput" placeholder="8桁の部屋コード" maxlength="8" 
+                               class="lowercase font-mono text-center tracking-widest w-full bg-white border-2 border-sky-300 rounded-xl px-3 py-2 font-black text-base focus:outline-none focus:border-sky-500">
+                        <input type="text" id="joinRoomNickInput" placeholder="あなたのニックネーム" maxlength="10" 
+                               class="w-full bg-white border-2 border-sky-300 rounded-xl px-3 py-2 font-bold text-sm focus:outline-none focus:border-sky-500">
+                        <button onclick="joinBattleRoom()" class="bounce-btn w-full bg-sky-500 hover:bg-sky-600 text-white font-black py-3 rounded-xl border-b-4 border-sky-700 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-right-to-bracket"></i> 部屋に入る
+                        </button>
+                    </div>
+                </div>
+
+                <button onclick="showView('home')" class="w-full text-center text-sm font-bold text-gray-400 py-2 hover:text-gray-600">
+                    ホームにもどる
+                </button>
+            </div>
+        </section>
+
+        <!-- Requirement ③ & ⑤: VIEW: Battle Waiting Room -->
+        <section id="viewBattleRoom" class="hidden space-y-6">
+            <div class="bg-white rounded-3xl p-6 md:p-8 border-4 border-purple-400 custom-shadow space-y-6">
+                <!-- Room Header -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b-2 border-slate-100 pb-4 gap-3">
+                    <div>
+                        <span class="text-xs font-bold text-purple-600">たいせんへや</span>
+                        <div class="flex items-center gap-2">
+                            <h2 id="roomCodeDisplay" class="text-3xl font-black font-mono text-purple-800 tracking-wider">--------</h2>
+                            <button onclick="copyRoomCode()" class="bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-1 rounded-xl text-xs font-bold">
+                                <i class="fa-solid fa-copy"></i> コードコピー
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Requirement ③: Non-host Leave Room Button -->
+                    <div>
+                        <button id="leaveRoomBtn" onclick="leaveBattleRoom()" class="bounce-btn bg-rose-500 hover:bg-rose-600 text-white text-sm font-black px-4 py-2 rounded-xl border-b-4 border-rose-700">
+                            <i class="fa-solid fa-right-from-bracket"></i> 対戦をやめる
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Requirement ⑤: Course Selection (Host Only Controls) -->
+                <div id="hostCourseSection" class="bg-purple-50 p-4 rounded-2xl border-2 border-purple-200 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-black text-sm text-purple-900 flex items-center gap-1.5">
+                            <i class="fa-solid fa-map text-purple-600"></i> 対戦コースを選ぶ (オーナー設定)
+                        </h3>
+                        <button onclick="selectRandomCourse()" class="bounce-btn bg-amber-400 hover:bg-amber-500 text-amber-950 text-xs font-black px-3 py-1.5 rounded-xl border-b-2 border-amber-600">
+                            🎲 おまかせ
+                        </button>
+                    </div>
+
+                    <div id="courseOptionsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                        <!-- JS Rendered Courses -->
+                    </div>
+                </div>
+
+                <!-- Non-Host Course Waiting Display -->
+                <div id="guestCourseSection" class="hidden bg-slate-50 p-4 rounded-2xl border border-slate-200 text-center space-y-1">
+                    <span class="text-xs font-bold text-gray-500">えらばれたコース</span>
+                    <div id="guestSelectedCourseText" class="text-lg font-black text-purple-700">選択中...</div>
+                </div>
+
+                <!-- Requirement ③: Joined Members List (Supports 40+ Players) -->
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-black text-slate-700 text-base flex items-center gap-2">
+                            <i class="fa-solid fa-user-group text-sky-500"></i> さんか中のメンバー
+                        </h3>
+                        <span id="playerCountBadge" class="bg-sky-100 text-sky-800 font-black text-xs px-3 py-1 rounded-full">
+                            1人
+                        </span>
+                    </div>
+
+                    <div id="roomPlayersGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 max-h-60 overflow-y-auto p-1">
+                        <!-- JS Rendered Nicknames -->
+                    </div>
+                </div>
+
+                <!-- Requirement ⑤: Start Battle Button (Host Only) -->
+                <div id="hostStartSection" class="text-center pt-2">
+                    <button onclick="startMultiplayerBattle()" class="bounce-btn w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-white text-xl font-black py-4 px-12 rounded-2xl border-b-4 border-emerald-700 custom-shadow flex items-center justify-center gap-2 mx-auto">
+                        <i class="fa-solid fa-flag-checkered text-2xl"></i> 対戦スタート！
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: Game Screen (Both Solo & Multiplayer) -->
+        <section id="viewGame" class="hidden space-y-4">
+            <div class="bg-white rounded-3xl p-6 md:p-8 border-4 border-emerald-400 custom-shadow space-y-6">
+                <!-- Countdown Overlay -->
+                <div id="countdownOverlay" class="hidden text-center py-12 space-y-4">
+                    <div class="text-2xl font-black text-emerald-600">まもなくゲームスタート！</div>
+                    <div id="countdownNum" class="text-8xl font-black text-rose-500 animate-bounce">3</div>
+                </div>
+
+                <!-- Active Game Area -->
+                <div id="activeGameContent" class="space-y-6">
+                    <!-- Game Header Info -->
+                    <div class="flex justify-between items-center border-b-2 border-slate-100 pb-4">
+                        <div class="flex items-center gap-2">
+                            <span class="bg-emerald-100 text-emerald-800 font-black px-3 py-1 rounded-xl text-lg">
+                                もんだい <span id="qIndex">1</span>/10
+                            </span>
+                            <span id="currentCourseBadge" class="bg-purple-100 text-purple-700 text-xs font-bold px-2.5 py-1 rounded-full">
+                                かんたん計算
+                            </span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs font-bold text-gray-400 block">のこりじかん</span>
+                            <span id="gameTimer" class="font-mono text-2xl font-black text-rose-500">30.0s</span>
+                        </div>
+                    </div>
+
+                    <!-- Question Area -->
+                    <div class="text-center py-6 space-y-4">
+                        <div id="questionDisplay" class="text-3xl md:text-5xl font-black tracking-wider text-slate-800 min-h-[4rem] flex items-center justify-center">
+                            7 + 5 = ?
+                        </div>
+                    </div>
+
+                    <!-- Answer Options (Multiple Choice OR Keypad) -->
+                    <div id="multipleChoiceContainer" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md mx-auto">
+                        <!-- JS Option Buttons -->
+                    </div>
+
+                    <div id="keypadContainer" class="max-w-xs mx-auto space-y-3">
+                        <div class="bg-slate-100 border-2 border-slate-300 rounded-2xl p-3 text-right">
+                            <span id="answerInput" class="font-mono text-3xl font-black tracking-wider text-slate-700 min-h-[2.25rem] inline-block"></span>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="appendNum('1')" class="bounce-btn bg-white border-2 border-slate-200 text-2xl font-black py-3 rounded-xl shadow hover:bg-slate-50">1</button>
+                            <button onclick="appendNum('2')" class="bounce-btn bg-white border-2 border-slate-200 text-2xl font-black py-3 rounded-xl shadow hover:bg-slate-50">2</button>
+                            <button onclick="appendNum('3')" class="bounce-btn bg-white border-2 border-slate-200 text-2xl font-black py-3 rounded-xl shadow hover:bg-slate-50">3</button>
+                            <button onclick="appendNum('4')" class="bounce-btn bg-white border-2 border-slate-200 text-2xl font-black py-3 rounded-xl shadow hover:bg-slate-50">4</button>
+                            <button onclick="appendNum('5')" class="bounce-btn bg-white border-2 border-slate-200 text-2xl font-black py-3 rounded-xl shadow hover:bg-slate-50">5</button>
+                            <button onclick="appendNum('6')" class="bounce-btn bg-white border-2 border-slate-200 text-2xl font-black py-3 rounded-xl shadow hover:bg-slate-50">6</button>
+                            <button onclick="appendNum('7')" class="bounce-btn bg-white border-2 border-slate-200 text-2xl font-black py-3 rounded-xl shadow hover:bg-slate-50">7</button>
+                            <button onclick="appendNum('8')" class="bounce-btn bg-white border-2 border-slate-200 text-2xl font-black py-3 rounded-xl shadow hover:bg-slate-50">8</button>
+                            <button onclick="appendNum('9')" class="bounce-btn bg-white border-2 border-slate-200 text-2xl font-black py-3 rounded-xl shadow hover:bg-slate-50">9</button>
+                            <button onclick="clearNum()" class="bounce-btn bg-rose-100 border-2 border-rose-200 text-rose-600 text-xl font-black py-3 rounded-xl shadow">けす</button>
+                            <button onclick="appendNum('0')" class="bounce-btn bg-white border-2 border-slate-200 text-2xl font-black py-3 rounded-xl shadow hover:bg-slate-50">0</button>
+                            <button onclick="submitAnswer()" class="bounce-btn bg-emerald-500 border-b-4 border-emerald-700 text-white text-xl font-black py-3 rounded-xl shadow">OK</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Requirement ⑥: VIEW: Game Result (Solo & Multiplayer) -->
+        <section id="viewResult" class="hidden space-y-6 text-center">
+            <div class="bg-white rounded-3xl p-6 md:p-8 border-4 border-amber-400 custom-shadow space-y-6">
+                <!-- Solo Result -->
+                <div id="soloResultBox" class="space-y-4">
+                    <div class="inline-block bg-amber-100 text-amber-800 text-sm font-black px-4 py-1.5 rounded-full">
+                        🎉 おつかれさま！
+                    </div>
+                    <h2 class="text-3xl font-black text-amber-600">けっか はっぴょう</h2>
+
+                    <div class="bg-amber-50 rounded-2xl p-6 border-2 border-amber-200 max-w-sm mx-auto space-y-2">
+                        <div class="text-gray-500 text-sm font-bold">あなたのスコア</div>
+                        <div id="finalScoreDisplay" class="text-5xl font-black text-amber-600 font-mono">1,250</div>
+                        <div class="text-xs text-gray-500 font-bold pt-2">
+                            せいかい: <span id="finalCorrectCount">10</span>/10問 ｜ タイム: <span id="finalTimeDisplay">15.2</span>秒
+                        </div>
+                    </div>
+
+                    <!-- Save Score to Group -->
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 max-w-sm mx-auto space-y-3 text-left">
+                        <label class="text-xs font-bold text-gray-600 block">成績グループに記録保存する：</label>
+                        <input type="text" id="playerNameInput" maxlength="10" placeholder="なまえ（例: たろう）" 
+                               class="w-full bg-white border-2 border-slate-300 rounded-xl px-3 py-2 text-base font-bold focus:outline-none focus:border-amber-500">
+                        
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-gray-600 block">きろくするグループ:</label>
+                            <select id="scoreGroupSelect" class="w-full bg-white border-2 border-slate-300 rounded-xl px-3 py-2 text-sm font-bold focus:outline-none focus:border-amber-500">
+                            </select>
+                        </div>
+
+                        <button onclick="saveScore()" class="bounce-btn w-full bg-amber-500 hover:bg-amber-600 text-white font-black py-3 rounded-xl border-b-4 border-amber-700 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> スコアを保存する
+                        </button>
+                    </div>
+
+                    <div class="flex justify-center gap-4">
+                        <button onclick="showView('home')" class="bounce-btn bg-slate-200 hover:bg-slate-300 text-slate-700 font-black px-6 py-3 rounded-xl">
+                            ホームにもどる
+                        </button>
+                        <button onclick="startSoloGame()" class="bounce-btn bg-emerald-500 hover:bg-emerald-600 text-white font-black px-6 py-3 rounded-xl border-b-4 border-emerald-700">
+                            もう一回あそぶ
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Requirement ⑥: Multiplayer Result (2 Player VS 3+ Players) -->
+                <div id="multiResultBox" class="hidden space-y-6">
+                    <span class="inline-block bg-purple-100 text-purple-800 text-sm font-black px-4 py-1.5 rounded-full">
+                        ⚔️ 対戦結果
+                    </span>
+
+                    <!-- 2 Players Mode: 勝ち/ひきわけ/負け -->
+                    <div id="twoPlayerOutcome" class="hidden text-center py-4 space-y-2">
+                        <div id="twoPlayerOutcomeText" class="text-5xl font-black tracking-wider">
+                            勝ち！
+                        </div>
+                    </div>
+
+                    <!-- 3+ Players Mode: Top 3 & Your Rank -->
+                    <div id="multiPlayerPodium" class="space-y-4">
+                        <div class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 text-center max-w-md mx-auto">
+                            <div class="text-xs font-bold text-gray-500">あなたの順位</div>
+                            <div id="myRankDisplay" class="text-4xl font-black text-amber-600">第 1 位</div>
+                            <div id="myScoreDisplay" class="text-xs text-gray-500 font-bold mt-1">1,200 pt</div>
+                        </div>
+
+                        <div class="max-w-md mx-auto text-left space-y-2">
+                            <h3 class="font-black text-sm text-slate-700 flex items-center gap-1.5">
+                                <i class="fa-solid fa-trophy text-amber-400"></i> トップ3
+                            </h3>
+                            <div id="top3ListContainer" class="space-y-2">
+                                <!-- JS Top 3 -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Requirement ⑦: Rematch Button for Host / Waiting for Guest -->
+                    <div id="multiResultActions" class="pt-4 border-t border-slate-100">
+                        <div id="hostRematchControls" class="hidden space-y-3">
+                            <button onclick="hostPrepareRematch()" class="bounce-btn bg-purple-500 hover:bg-purple-600 text-white text-xl font-black py-4 px-8 rounded-2xl border-b-4 border-purple-700 custom-shadow mx-auto flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-rotate-right text-2xl"></i> もう1回あそぶ（コース選択へ）
+                            </button>
+                        </div>
+                        <div id="guestRematchWaiting" class="hidden text-gray-500 text-sm font-bold animate-pulse">
+                            <i class="fa-solid fa-spinner fa-spin"></i> オーナーがコースを選んでいます...
+                        </div>
+
+                        <button onclick="leaveBattleRoom()" class="mt-4 bounce-btn bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-black px-4 py-2 rounded-xl">
+                            対戦をぬける
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: Create Group (Group Score Management) -->
+        <section id="viewCreateGroup" class="hidden space-y-6">
+            <div class="bg-white rounded-3xl p-6 md:p-8 border-4 border-purple-300 custom-shadow space-y-6 max-w-lg mx-auto">
+                <h2 class="text-2xl font-black text-purple-600 text-center flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-plus-circle"></i> あたらしいグループをつくる
+                </h2>
+
+                <div class="space-y-4 text-left">
+                    <div>
+                        <label class="text-sm font-bold text-gray-700 block mb-1">① グループのなまえ</label>
+                        <input type="text" id="newGroupName" placeholder="例: 3ねん1くみ" maxlength="20"
+                               class="w-full bg-slate-50 border-2 border-slate-300 rounded-xl px-3 py-2.5 font-bold focus:outline-none focus:border-purple-500">
+                    </div>
+
+                    <div>
+                        <label class="text-sm font-bold text-gray-700 block mb-1">② かんりしゃ パスワード</label>
+                        <p class="text-xs text-gray-400 mb-1">※グループの管理やスコア公開設定の変更に使います。</p>
+                        <input type="password" id="newGroupPassword" placeholder="半角英数字4〜12文字" maxlength="12"
+                               class="w-full bg-slate-50 border-2 border-slate-300 rounded-xl px-3 py-2.5 font-bold focus:outline-none focus:border-purple-500">
+                    </div>
+
+                    <button onclick="executeCreateGroup()" class="bounce-btn w-full bg-purple-500 hover:bg-purple-600 text-white font-black py-3.5 rounded-xl border-b-4 border-purple-700 flex items-center justify-center gap-2 text-lg">
+                        <i class="fa-solid fa-check"></i> グループを作成する
+                    </button>
+                    
+                    <button onclick="showView('home')" class="w-full text-center text-sm font-bold text-gray-400 py-2 hover:text-gray-600">
+                        キャンセル
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: Ranking -->
+        <section id="viewRanking" class="hidden space-y-6">
+            <div class="bg-white rounded-3xl p-6 md:p-8 border-4 border-amber-300 custom-shadow space-y-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between border-b-2 border-slate-100 pb-4 gap-2">
+                    <div>
+                        <span class="text-xs font-bold text-amber-600">グループランキング</span>
+                        <h2 id="rankingTitle" class="text-2xl font-black text-amber-800">--</h2>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span id="publicStatusBadge" class="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-600">
+                            読み込み中...
+                        </span>
+                        <button onclick="showView('home')" class="bounce-btn bg-slate-200 hover:bg-slate-300 text-slate-700 text-sm font-black px-4 py-1.5 rounded-xl">
+                            もどる
+                        </button>
+                    </div>
+                </div>
+
+                <div id="privateNoticeBox" class="hidden bg-rose-50 border-2 border-rose-200 p-4 rounded-2xl text-center space-y-2">
+                    <i class="fa-solid fa-lock text-rose-500 text-3xl"></i>
+                    <h3 class="font-black text-rose-700">このグループのランキングは非公開です</h3>
+                    <p class="text-xs font-bold text-gray-600">
+                        管理者が「全員に公開」に設定するか、管理パスワードでログインすると確認できます。
+                    </p>
+                    <button onclick="showAdminModal()" class="bounce-btn bg-slate-700 text-white font-black px-4 py-2 text-xs rounded-xl mt-2">
+                        かんりしゃパスワードを入力する
+                    </button>
+                </div>
+
+                <div id="rankingContent" class="space-y-3">
+                    <div class="text-center text-gray-400 py-8 font-bold">データを読み込んでいます...</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL: Admin Settings -->
+    <div id="adminModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full border-4 border-slate-700 shadow-2xl space-y-6">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-xl font-black text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-user-shield text-slate-700"></i> かんりしゃモード
+                </h3>
+                <button onclick="closeAdminModal()" class="text-gray-400 hover:text-gray-600 text-xl font-black">✕</button>
+            </div>
+
+            <div id="adminLoginForm" class="space-y-4">
+                <p class="text-xs font-bold text-gray-500">
+                    グループ作成時に設定した「かんりしゃパスワード」を入力してください。
+                </p>
+                <div>
+                    <input type="password" id="adminAuthPass" placeholder="パスワード" 
+                           class="w-full bg-slate-100 border-2 border-slate-300 rounded-xl px-3 py-2 font-bold focus:outline-none focus:border-slate-600">
+                </div>
+                <button onclick="authAdmin()" class="bounce-btn w-full bg-slate-700 hover:bg-slate-800 text-white font-black py-3 rounded-xl border-b-4 border-slate-900">
+                    認証する
+                </button>
+            </div>
+
+            <div id="adminPanel" class="hidden space-y-6">
+                <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl text-xs font-bold text-emerald-800 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-check text-emerald-600 text-base"></i> 認証完了：管理者としてログインしています
+                </div>
+
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+                    <h4 class="font-black text-sm text-slate-800">グループ内のランキング公開設定</h4>
+                    <p class="text-xs font-bold text-gray-500">
+                        同じグループの一般メンバーにスコアやランキングを公開するかどうかを選択します。
+                    </p>
+
+                    <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200">
+                        <span class="text-xs font-black text-slate-700">グループ全員にランキング公開</span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="adminPublicToggle" onchange="togglePublicSetting(this.checked)" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2">
+                    <button onclick="closeAdminModal()" class="bounce-btn bg-slate-200 text-slate-700 font-black px-4 py-2 text-xs rounded-xl">
+                        とじる
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Custom Alert Message -->
+    <div id="customModal" class="fixed inset-0 bg-slate-900/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full text-center border-4 border-amber-400 space-y-4 shadow-xl">
+            <div id="customModalIcon" class="text-4xl text-amber-500">
+                <i class="fa-solid fa-circle-info"></i>
+            </div>
+            <div id="customModalText" class="font-black text-slate-800 text-base leading-relaxed">
+                メッセージ
+            </div>
+            <button onclick="closeCustomModal()" class="bounce-btn bg-amber-500 hover:bg-amber-600 text-white font-black py-2.5 px-6 rounded-xl border-b-4 border-amber-700 w-full">
+                OK
+            </button>
+        </div>
+    </div>
+
+    <!-- Firebase setup -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, doc, setDoc, getDoc, collection, onSnapshot, addDoc, updateDoc, deleteDoc 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'math-game-app';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' 
+            ? JSON.parse(__firebase_config) 
+            : {
+                apiKey: "AIzaSyDemoKeyOnlyForPublicFallback",
+                authDomain: "demo-app.firebaseapp.com",
+                projectId: "demo-app",
+                storageBucket: "demo-app.appspot.com",
+                messagingSenderId: "123456789",
+                appId: "1:123456789:web:123456"
+            };
+
+        let app, auth, db;
+        let isFirestoreAvailable = true;
+
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+        } catch(e) {
+            isFirestoreAvailable = false;
+        }
+
+        let currentUser = null;
+        let myUserId = 'usr_' + Math.random().toString(36).substr(2, 9);
+        let joinedGroups = [];
+        let currentActiveGroupCode = null;
+        let isCurrentAdminAuthenticated = false;
+
+        let allGroups = {};
+        let allScores = [];
+
+        // BroadcastChannel for instant local multi-tab sync testing
+        const roomChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('math_battle_rooms') : null;
+
+        if (roomChannel) {
+            roomChannel.onmessage = (event) => {
+                if (event.data && event.data.type === 'ROOM_UPDATE') {
+                    if (window.currentRoomCode === event.data.code) {
+                        handleRoomStateUpdate(event.data.roomData);
+                    }
+                }
+            };
+        }
+
+        // Fallback Storage Helpers
+        function loadFallbackData() {
+            try {
+                const storedGroups = localStorage.getItem('math_groups_db');
+                if (storedGroups) allGroups = JSON.parse(storedGroups);
+                const storedScores = localStorage.getItem('math_scores_db');
+                if (storedScores) allScores = JSON.parse(storedScores);
+            } catch(e) {}
+        }
+
+        function saveFallbackData() {
+            try {
+                localStorage.setItem('math_groups_db', JSON.stringify(allGroups));
+                localStorage.setItem('math_scores_db', JSON.stringify(allScores));
+            } catch(e) {}
+        }
+
+        async function initAuth() {
+            if (!auth || !isFirestoreAvailable) {
+                isFirestoreAvailable = false;
+                loadFallbackData();
+                return;
+            }
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    const userCredential = await signInWithCustomToken(auth, __initial_auth_token);
+                    currentUser = userCredential.user;
+                } else {
+                    const userCredential = await signInAnonymously(auth);
+                    currentUser = userCredential.user;
+                }
+                if (currentUser) myUserId = currentUser.uid;
+                startFirestoreListeners();
+            } catch (err) {
+                isFirestoreAvailable = false;
+                loadFallbackData();
+            }
+        }
+
+        function startFirestoreListeners() {
+            if (!currentUser || !isFirestoreAvailable) return;
+
+            const groupsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'groups');
+            onSnapshot(groupsColRef, (snapshot) => {
+                if (!isFirestoreAvailable) return;
+                allGroups = {};
+                snapshot.forEach(doc => { allGroups[doc.id] = doc.data(); });
+                saveFallbackData();
+                renderJoinedGroupsList();
+                updateDashboardBadge();
+            }, () => { isFirestoreAvailable = false; });
+
+            const scoresColRef = collection(db, 'artifacts', appId, 'public', 'data', 'scores');
+            onSnapshot(scoresColRef, (snapshot) => {
+                if (!isFirestoreAvailable) return;
+                allScores = [];
+                snapshot.forEach(doc => { allScores.push({ id: doc.id, ...doc.data() }); });
+                saveFallbackData();
+                if (!document.getElementById('viewRanking').classList.contains('hidden')) renderRanking();
+            }, () => { isFirestoreAvailable = false; });
+        }
+
+        /* --- MULTIPLAYER ROOM ENGINE --- */
+        window.currentRoomCode = null;
+        window.isRoomHost = false;
+        window.myNickname = '';
+        let roomUnsubscribe = null;
+        let currentRoomData = null;
+
+        // Requirement ⑤ Courses definition with unlock flags
+        window.COURSES = [
+            { id: 'math_basic', name: 'かんたん計算', icon: 'fa-calculator', locked: false },
+            { id: 'math_kuku', name: '九九・かけざん', icon: 'fa-xmark', locked: false },
+            { id: 'geo_rivers', name: '日本の川', icon: 'fa-water', locked: true, lockLabel: '川マスターで解除' },
+            { id: 'geo_pref', name: '都道府県クイズ', icon: 'fa-map-location-dot', locked: false }
+        ];
+
+        // Player's personal unlocked courses (default unlocked basic + kuku + pref, rivers locked initially)
+        window.myUnlockedCourses = ['math_basic', 'math_kuku', 'geo_pref', 'geo_rivers']; 
+
+        // Requirement ②: Create Battle Room (8-character lowercase/number code)
+        window.createBattleRoom = async function() {
+            const nick = document.getElementById('hostNickInput').value.trim();
+            if (!nick) {
+                showCustomModal("ニックネームを入力してください。");
+                return;
+            }
+
+            const chars = 'abcdefghijklmnopqrstuvwxyz23456789';
+            let code = '';
+            for (let i = 0; i < 8; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+
+            window.currentRoomCode = code;
+            window.isRoomHost = true;
+            window.myNickname = nick;
+
+            const roomData = {
+                code: code,
+                hostId: myUserId,
+                status: 'waiting', // waiting, countdown, playing, result, destroyed
+                selectedCourse: 'math_basic',
+                players: {
+                    [myUserId]: {
+                        id: myUserId,
+                        name: nick,
+                        isHost: true,
+                        unlockedCourses: window.myUnlockedCourses,
+                        score: 0,
+                        timeSec: 0,
+                        finished: false
+                    }
+                },
+                createdAt: new Date().toISOString()
+            };
+
+            await updateRoomState(code, roomData);
+            subscribeToRoom(code);
+            showView('battleRoom');
+        };
+
+        // Requirement ②: Join Battle Room
+        window.joinBattleRoom = async function() {
+            const code = document.getElementById('joinRoomCodeInput').value.trim().toLowerCase();
+            const nick = document.getElementById('joinRoomNickInput').value.trim();
+
+            if (code.length !== 8) {
+                showCustomModal("8桁の部屋コードを入力してください。");
+                return;
+            }
+            if (!nick) {
+                showCustomModal("ニックネームを入力してください。");
+                return;
+            }
+
+            const room = await fetchRoomState(code);
+            if (!room || room.status === 'destroyed') {
+                showCustomModal("指定の部屋が見つからないか、すでに消滅しています。");
+                return;
+            }
+
+            window.currentRoomCode = code;
+            window.isRoomHost = (room.hostId === myUserId);
+            window.myNickname = nick;
+
+            // Add player
+            room.players[myUserId] = {
+                id: myUserId,
+                name: nick,
+                isHost: window.isRoomHost,
+                unlockedCourses: window.myUnlockedCourses,
+                score: 0,
+                timeSec: 0,
+                finished: false
+            };
+
+            await updateRoomState(code, room);
+            subscribeToRoom(code);
+            showView('battleRoom');
+        };
+
+        async function fetchRoomState(code) {
+            if (isFirestoreAvailable) {
+                try {
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'multi_rooms', code);
+                    const snap = await getDoc(docRef);
+                    if (snap.exists()) return snap.data();
+                } catch(e) {}
+            }
+            try {
+                const local = localStorage.getItem('multi_room_' + code);
+                if (local) return JSON.parse(local);
+            } catch(e) {}
+            return null;
+        }
+
+        async function updateRoomState(code, roomData) {
+            currentRoomData = roomData;
+
+            // LocalStorage & BroadcastChannel
+            try {
+                localStorage.setItem('multi_room_' + code, JSON.stringify(roomData));
+            } catch(e) {}
+            if (roomChannel) {
+                roomChannel.postMessage({ type: 'ROOM_UPDATE', code: code, roomData: roomData });
+            }
+
+            // Firestore Sync
+            if (isFirestoreAvailable) {
+                try {
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'multi_rooms', code);
+                    await setDoc(docRef, roomData);
+                } catch(e) {}
+            }
+
+            handleRoomStateUpdate(roomData);
+        }
+
+        function subscribeToRoom(code) {
+            if (roomUnsubscribe) roomUnsubscribe();
+
+            if (isFirestoreAvailable) {
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'multi_rooms', code);
+                roomUnsubscribe = onSnapshot(docRef, (snap) => {
+                    if (snap.exists()) {
+                        handleRoomStateUpdate(snap.data());
+                    } else if (currentRoomData && currentRoomData.status !== 'destroyed') {
+                        // Room deleted on Firestore
+                        handleRoomStateUpdate({ status: 'destroyed' });
+                    }
+                });
+            }
+        }
+
+        // Requirement ④: Room Destruction & State Router
+        function handleRoomStateUpdate(room) {
+            if (!room || room.status === 'destroyed') {
+                if (window.currentRoomCode) {
+                    showCustomModal("対戦部屋が解散・消滅しました。");
+                    window.currentRoomCode = null;
+                    showView('battleMenu');
+                }
+                return;
+            }
+
+            currentRoomData = room;
+            const players = Object.values(room.players || {});
+            const nonHostPlayers = players.filter(p => !p.isHost);
+
+            // Requirement ④: If all non-host players left after match setup, or host left -> Destroy room!
+            if (players.length === 0 || !room.players[room.hostId]) {
+                destroyRoom(room.code);
+                return;
+            }
+
+            // Update UI elements in Waiting Room
+            document.getElementById('roomCodeDisplay').textContent = room.code;
+            document.getElementById('playerCountBadge').textContent = `${players.length}人`;
+
+            // Requirement ③: Display all participants' nicknames
+            const grid = document.getElementById('roomPlayersGrid');
+            grid.innerHTML = players.map(p => `
+                <div class="bg-slate-50 border-2 ${p.isHost ? 'border-amber-400 bg-amber-50' : 'border-slate-200'} rounded-xl p-2.5 text-center flex flex-col items-center justify-center">
+                    ${p.isHost ? '<span class="text-[10px] bg-amber-400 text-amber-950 px-1.5 py-0.5 rounded-full font-black mb-1">👑 オーナー</span>' : ''}
+                    <div class="font-black text-sm text-slate-800 truncate w-full">${escapeHtml(p.name)}</div>
+                </div>
+            `).join('');
+
+            // Controls Visibility for Host vs Guest
+            if (window.isRoomHost) {
+                document.getElementById('hostCourseSection').classList.remove('hidden');
+                document.getElementById('guestCourseSection').classList.add('hidden');
+                document.getElementById('hostStartSection').classList.remove('hidden');
+                document.getElementById('leaveRoomBtn').innerHTML = '<i class="fa-solid fa-trash-can"></i> 部屋を解散する';
+                renderCourseOptions(room);
+            } else {
+                document.getElementById('hostCourseSection').classList.add('hidden');
+                document.getElementById('guestCourseSection').classList.remove('hidden');
+                document.getElementById('hostStartSection').classList.add('hidden');
+                document.getElementById('leaveRoomBtn').innerHTML = '<i class="fa-solid fa-right-from-bracket"></i> 対戦をやめる';
+
+                const c = window.COURSES.find(item => item.id === room.selectedCourse);
+                document.getElementById('guestSelectedCourseText').textContent = c ? c.name : room.selectedCourse;
+            }
+
+            // Handle Game Phase Transitions
+            if (room.status === 'countdown' || room.status === 'playing') {
+                if (document.getElementById('viewGame').classList.contains('hidden')) {
+                    showView('game');
+                    startMultiplayerGameSession(room);
+                }
+            } else if (room.status === 'result') {
+                if (document.getElementById('viewResult').classList.contains('hidden')) {
+                    showView('result');
+                    renderMultiplayerResults(room);
+                }
+            } else if (room.status === 'waiting') {
+                if (!document.getElementById('viewBattleRoom').classList.contains('hidden') === false && 
+                    !document.getElementById('viewBattleMenu').classList.contains('hidden') === false) {
+                    showView('battleRoom');
+                }
+            }
+        }
+
+        // Requirement ⑤: Course Selection Logic (Locks courses if ANY participant hasn't unlocked it)
+        function renderCourseOptions(room) {
+            const players = Object.values(room.players || {});
+            const container = document.getElementById('courseOptionsGrid');
+
+            container.innerHTML = window.COURSES.map(c => {
+                // Check if ALL players in room have unlocked this course
+                const isAvailableForEveryone = players.every(p => Array.isArray(p.unlockedCourses) && p.unlockedCourses.includes(c.id));
+                const isSelected = (room.selectedCourse === c.id);
+
+                return `
+                    <button onclick="${isAvailableForEveryone ? `selectCourse('${c.id}')` : ''}" 
+                            class="p-3 rounded-xl border-2 text-left font-black text-xs transition flex items-center justify-between ${
+                                !isAvailableForEveryone 
+                                ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-60' 
+                                : isSelected 
+                                    ? 'bg-purple-600 text-white border-purple-800 shadow' 
+                                    : 'bg-white text-slate-700 border-purple-200 hover:bg-purple-50'
+                            }">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid ${c.icon}"></i>
+                            <span>${c.name}</span>
+                        </div>
+                        ${!isAvailableForEveryone ? '<span class="text-[10px] text-rose-500 font-bold">🔒 全員解除が必要</span>' : (isSelected ? '✓' : '')}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        window.selectCourse = async function(courseId) {
+            if (!window.isRoomHost || !currentRoomData) return;
+            currentRoomData.selectedCourse = courseId;
+            await updateRoomState(currentRoomData.code, currentRoomData);
+        };
+
+        // Requirement ⑤: "おまかせ" Random Course Selection
+        window.selectRandomCourse = async function() {
+            if (!window.isRoomHost || !currentRoomData) return;
+            const players = Object.values(currentRoomData.players || {});
+
+            const available = window.COURSES.filter(c => 
+                players.every(p => Array.isArray(p.unlockedCourses) && p.unlockedCourses.includes(c.id))
+            );
+
+            if (available.length > 0) {
+                const picked = available[Math.floor(Math.random() * available.length)];
+                currentRoomData.selectedCourse = picked.id;
+                await updateRoomState(currentRoomData.code, currentRoomData);
+            }
+        };
+
+        // Requirement ⑤: Start Battle Button
+        window.startMultiplayerBattle = async function() {
+            if (!window.isRoomHost || !currentRoomData) return;
+            currentRoomData.status = 'countdown';
+            // Reset player score flags
+            Object.keys(currentRoomData.players).forEach(pid => {
+                currentRoomData.players[pid].score = 0;
+                currentRoomData.players[pid].timeSec = 0;
+                currentRoomData.players[pid].finished = false;
+            });
+            await updateRoomState(currentRoomData.code, currentRoomData);
+        };
+
+        // Requirement ③ & ④: Leave Room / Host Destroy Room
+        window.leaveBattleRoom = async function() {
+            if (!window.currentRoomCode || !currentRoomData) {
+                showView('battleMenu');
+                return;
+            }
+
+            if (window.isRoomHost) {
+                // Host leaves -> Destroy room (Requirement ④)
+                await destroyRoom(window.currentRoomCode);
+            } else {
+                // Non-host leaves -> Remove player
+                delete currentRoomData.players[myUserId];
+                const remainingPlayers = Object.values(currentRoomData.players);
+                const nonHostRemaining = remainingPlayers.filter(p => !p.isHost);
+
+                // Requirement ④: If all non-host players leave, room is destroyed
+                if (nonHostRemaining.length === 0) {
+                    await destroyRoom(window.currentRoomCode);
+                } else {
+                    await updateRoomState(window.currentRoomCode, currentRoomData);
+                }
+            }
+
+            window.currentRoomCode = null;
+            showView('battleMenu');
+        };
+
+        async function destroyRoom(code) {
+            if (isFirestoreAvailable) {
+                try {
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'multi_rooms', code);
+                    await deleteDoc(docRef);
+                } catch(e) {}
+            }
+            try {
+                localStorage.removeItem('multi_room_' + code);
+            } catch(e) {}
+            if (roomChannel) {
+                roomChannel.postMessage({ type: 'ROOM_UPDATE', code: code, roomData: { status: 'destroyed' } });
+            }
+        }
+
+        window.copyRoomCode = function() {
+            if (window.currentRoomCode) {
+                navigator.clipboard.writeText(window.currentRoomCode);
+                showCustomModal("部屋コードをコピーしました！");
+            }
+        };
+
+        // Handle browser window close by Host
+        window.addEventListener('beforeunload', () => {
+            if (window.isRoomHost && window.currentRoomCode) {
+                destroyRoom(window.currentRoomCode);
+            }
+        });
+
+        // Group management helper functions
+        function loadLocalJoinedGroups() {
+            try {
+                const stored = localStorage.getItem('math_joined_groups');
+                if (stored) joinedGroups = JSON.parse(stored);
+            } catch(e) {}
+            if (joinedGroups.length > 0 && !currentActiveGroupCode) currentActiveGroupCode = joinedGroups[0];
+        }
+
+        function saveLocalJoinedGroups() {
+            try { localStorage.setItem('math_joined_groups', JSON.stringify(joinedGroups)); } catch(e) {}
+        }
+
+        window.joinGroup = function() {
+            const codeInput = document.getElementById('joinCodeInput').value.trim().toUpperCase();
+            if (codeInput.length !== 8) { showCustomModal("8けたのコードを入力してください。"); return; }
+            if (!allGroups[codeInput]) { showCustomModal("そのコードのグループが見つかりません。"); return; }
+
+            if (!joinedGroups.includes(codeInput)) {
+                joinedGroups.push(codeInput);
+                saveLocalJoinedGroups();
+            }
+            currentActiveGroupCode = codeInput;
+            document.getElementById('joinCodeInput').value = '';
+            showCustomModal(`「${allGroups[codeInput].name}」に参加しました！`);
+            renderJoinedGroupsList();
+            updateDashboardBadge();
+        };
+
+        window.executeCreateGroup = async function() {
+            const name = document.getElementById('newGroupName').value.trim();
+            const pass = document.getElementById('newGroupPassword').value.trim();
+
+            if (!name) { showCustomModal("グループ名を入力してください。"); return; }
+            if (!pass || pass.length < 4) { showCustomModal("かんりしゃパスワードを半角4文字以上で入力してください。"); return; }
+
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let code = '';
+            for (let i = 0; i < 8; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
+
+            const groupData = { code, name, pass, isPublicRanking: false, createdAt: new Date().toISOString() };
+            allGroups[code] = groupData;
+            saveFallbackData();
+
+            if (isFirestoreAvailable) {
+                try {
+                    const groupDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'groups', code);
+                    await setDoc(groupDocRef, groupData);
+                } catch(e) {}
+            }
+
+            joinedGroups.push(code);
+            saveLocalJoinedGroups();
+            currentActiveGroupCode = code;
+
+            showCustomModal(`グループを作成しました！\nコード: 【 ${code} 】`);
+            renderJoinedGroupsList();
+            updateDashboardBadge();
+            showView('home');
+        };
+
+        function renderJoinedGroupsList() {
+            const container = document.getElementById('joinedGroupsContainer');
+            if (joinedGroups.length === 0) {
+                container.innerHTML = `<span class="text-xs text-gray-400">（まだグループがありません）</span>`;
+                return;
+            }
+
+            container.innerHTML = joinedGroups.map(code => {
+                const groupData = allGroups[code];
+                const groupName = groupData ? groupData.name : '（読み込み中）';
+                const isActive = code === currentActiveGroupCode;
+
+                return `
+                    <button onclick="switchActiveGroup('${code}')" 
+                            class="bounce-btn text-xs font-black px-3 py-1.5 rounded-xl border flex items-center gap-1 ${
+                                isActive ? 'bg-sky-500 text-white border-sky-700 shadow' : 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200'
+                            }">
+                        <i class="fa-solid ${isActive ? 'fa-circle-check' : 'fa-users'}"></i>
+                        ${groupName} (${code})
+                    </button>
+                `;
+            }).join('');
+
+            const scoreSelect = document.getElementById('scoreGroupSelect');
+            if (scoreSelect) {
+                scoreSelect.innerHTML = joinedGroups.map(code => {
+                    const g = allGroups[code];
+                    return `<option value="${code}">${g ? g.name : code} (${code})</option>`;
+                }).join('');
+            }
+        }
+
+        window.switchActiveGroup = function(code) {
+            currentActiveGroupCode = code;
+            isCurrentAdminAuthenticated = false;
+            renderJoinedGroupsList();
+            updateDashboardBadge();
+        };
+
+        function updateDashboardBadge() {
+            const badge = document.getElementById('activeGroupBadge');
+            const nameSpan = document.getElementById('currentGroupBadgeName');
+            const dashBox = document.getElementById('groupDashboardBox');
+
+            if (currentActiveGroupCode && allGroups[currentActiveGroupCode]) {
+                const g = allGroups[currentActiveGroupCode];
+                badge.classList.remove('hidden');
+                nameSpan.textContent = g.name;
+
+                dashBox.classList.remove('hidden');
+                document.getElementById('dashGroupName').textContent = g.name;
+                document.getElementById('dashGroupCode').textContent = `コード: ${g.code}`;
+            } else {
+                badge.classList.add('hidden');
+                dashBox.classList.add('hidden');
+            }
+        }
+
+        window.showAdminModal = function() {
+            if (!currentActiveGroupCode) { showCustomModal("グループが選択されていません。"); return; }
+            document.getElementById('adminModal').classList.remove('hidden');
+            document.getElementById('adminAuthPass').value = '';
+
+            if (isCurrentAdminAuthenticated) {
+                document.getElementById('adminLoginForm').classList.add('hidden');
+                document.getElementById('adminPanel').classList.remove('hidden');
+                const g = allGroups[currentActiveGroupCode];
+                document.getElementById('adminPublicToggle').checked = g ? !!g.isPublicRanking : false;
+            } else {
+                document.getElementById('adminLoginForm').classList.remove('hidden');
+                document.getElementById('adminPanel').classList.add('hidden');
+            }
+        };
+
+        window.closeAdminModal = function() { document.getElementById('adminModal').classList.add('hidden'); };
+
+        window.authAdmin = function() {
+            const inputPass = document.getElementById('adminAuthPass').value.trim();
+            const g = allGroups[currentActiveGroupCode];
+            if (g && g.pass === inputPass) {
+                isCurrentAdminAuthenticated = true;
+                showAdminModal();
+            } else {
+                showCustomModal("パスワードが違います。");
+            }
+        };
+
+        window.togglePublicSetting = async function(isPublic) {
+            if (!currentActiveGroupCode || !isCurrentAdminAuthenticated) return;
+            if (allGroups[currentActiveGroupCode]) {
+                allGroups[currentActiveGroupCode].isPublicRanking = isPublic;
+                saveFallbackData();
+            }
+            if (isFirestoreAvailable) {
+                try {
+                    const groupDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'groups', currentActiveGroupCode);
+                    await updateDoc(groupDocRef, { isPublicRanking: isPublic });
+                } catch(e) {}
+            }
+            showCustomModal(`ランキングを「${isPublic ? '全員に公開' : '管理者のみ'}」に変更しました。`);
+        };
+
+        window.showRankingView = function() {
+            if (!currentActiveGroupCode) { showCustomModal("グループを選択してください。"); return; }
+            showView('ranking');
+            renderRanking();
+        };
+
+        function renderRanking() {
+            if (!currentActiveGroupCode) return;
+            const g = allGroups[currentActiveGroupCode];
+            if (!g) return;
+
+            document.getElementById('rankingTitle').textContent = `${g.name} (${g.code})`;
+
+            const publicStatusBadge = document.getElementById('publicStatusBadge');
+            const privateNoticeBox = document.getElementById('privateNoticeBox');
+            const rankingContent = document.getElementById('rankingContent');
+
+            const isPublic = !!g.isPublicRanking;
+            if (isPublic) {
+                publicStatusBadge.textContent = "全員に公開中";
+                publicStatusBadge.className = "text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800";
+            } else {
+                publicStatusBadge.textContent = "管理者のみ閲覧可";
+                publicStatusBadge.className = "text-xs font-bold px-3 py-1 rounded-full bg-rose-100 text-rose-800";
+            }
+
+            if (!isPublic && !isCurrentAdminAuthenticated) {
+                privateNoticeBox.classList.remove('hidden');
+                rankingContent.innerHTML = '';
+                return;
+            }
+            privateNoticeBox.classList.add('hidden');
+
+            const groupScores = allScores
+                .filter(s => s.groupCode === currentActiveGroupCode)
+                .sort((a, b) => b.score - a.score);
+
+            if (groupScores.length === 0) {
+                rankingContent.innerHTML = `<div class="text-center text-gray-400 py-8 font-bold">まだスコアが記録されていません。</div>`;
+                return;
+            }
+
+            rankingContent.innerHTML = groupScores.map((item, idx) => {
+                let rankBadge = `<span class="font-black text-slate-500 w-6 inline-block">${idx + 1}</span>`;
+                if (idx === 0) rankBadge = `<i class="fa-solid fa-crown text-amber-400 text-xl w-6"></i>`;
+                else if (idx === 1) rankBadge = `<i class="fa-solid fa-medal text-slate-400 text-lg w-6"></i>`;
+                else if (idx === 2) rankBadge = `<i class="fa-solid fa-award text-amber-700 text-lg w-6"></i>`;
+
+                return `
+                    <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            ${rankBadge}
+                            <div>
+                                <div class="font-black text-slate-800 text-base">${escapeHtml(item.userName)}</div>
+                                <div class="text-xs text-gray-400 font-bold">せいかい: ${item.correctCount || 0}/10 ｜ タイム: ${item.timeSec || 0}秒</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-mono font-black text-amber-600 text-xl">${item.score.toLocaleString()} pt</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        window.saveScore = async function() {
+            const name = document.getElementById('playerNameInput').value.trim();
+            const groupCode = document.getElementById('scoreGroupSelect').value;
+
+            if (!name) { showCustomModal("なまえを入力してください。"); return; }
+            if (!groupCode) { showCustomModal("グループを選択してください。"); return; }
+
+            const scoreData = {
+                id: 'score_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                groupCode,
+                userName: name,
+                score: window.latestGameResult.score,
+                correctCount: window.latestGameResult.correctCount,
+                timeSec: window.latestGameResult.timeSec,
+                createdAt: new Date().toISOString()
+            };
+
+            allScores.push(scoreData);
+            saveFallbackData();
+
+            if (isFirestoreAvailable) {
+                try {
+                    const scoresColRef = collection(db, 'artifacts', appId, 'public', 'data', 'scores');
+                    await addDoc(scoresColRef, {
+                        groupCode: scoreData.groupCode,
+                        userName: scoreData.userName,
+                        score: scoreData.score,
+                        correctCount: scoreData.correctCount,
+                        timeSec: scoreData.timeSec,
+                        createdAt: scoreData.createdAt
+                    });
+                } catch(e) {}
+            }
+
+            showCustomModal("スコアをグループに保存しました！");
+            currentActiveGroupCode = groupCode;
+            updateDashboardBadge();
+            showRankingView();
+        };
+
+        // Requirement ⑦: Rematch Setup for Host
+        window.hostPrepareRematch = async function() {
+            if (!window.isRoomHost || !currentRoomData) return;
+            currentRoomData.status = 'waiting';
+            await updateRoomState(currentRoomData.code, currentRoomData);
+            showView('battleRoom');
+        };
+
+        // Complete score submission from game
+        window.submitMultiplayerScore = async function(score, correct, timeSec) {
+            if (!window.currentRoomCode || !currentRoomData) return;
+
+            if (currentRoomData.players[myUserId]) {
+                currentRoomData.players[myUserId].score = score;
+                currentRoomData.players[myUserId].correctCount = correct;
+                currentRoomData.players[myUserId].timeSec = timeSec;
+                currentRoomData.players[myUserId].finished = true;
+            }
+
+            // Check if all players finished
+            const players = Object.values(currentRoomData.players);
+            if (players.every(p => p.finished)) {
+                currentRoomData.status = 'result';
+            }
+
+            await updateRoomState(currentRoomData.code, currentRoomData);
+        };
+
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+        }
+
+        window.onload = function() {
+            loadLocalJoinedGroups();
+            loadFallbackData();
+            initAuth();
+            renderJoinedGroupsList();
+            updateDashboardBadge();
+        };
+    </script>
+
+    <script>
+        /* Web Audio API Sound Synthesizer */
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function playSound(type) {
+            try {
+                if (!audioCtx) audioCtx = new AudioContext();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'correct') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.setValueAtTime(659.25, now + 0.08);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.setValueAtTime(110, now + 0.1);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                } else if (type === 'fanfare') {
+                    [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.type = 'triangle';
+                        o.frequency.value = freq;
+                        g.gain.setValueAtTime(0.15, now + idx * 0.08);
+                        g.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.08 + 0.3);
+                        o.start(now + idx * 0.08);
+                        o.stop(now + idx * 0.08 + 0.3);
+                    });
+                }
+            } catch(e) {}
+        }
+
+        /* Calculation & Geography Quiz Engine */
+        let gameQuestions = [];
+        let currentQIndex = 0;
+        let currentAnswer = '';
+        let correctCount = 0;
+        let startTime = 0;
+        let timerInterval = null;
+        let isMultiplayerMode = false;
+
+        window.startSoloGame = function() {
+            isMultiplayerMode = false;
+            document.getElementById('soloResultBox').classList.remove('hidden');
+            document.getElementById('multiResultBox').classList.add('hidden');
+            initGameSession('math_basic');
+        };
+
+        window.startMultiplayerGameSession = function(room) {
+            isMultiplayerMode = true;
+            document.getElementById('soloResultBox').classList.add('hidden');
+            document.getElementById('multiResultBox').classList.remove('hidden');
+
+            // Countdown 3, 2, 1
+            document.getElementById('countdownOverlay').classList.remove('hidden');
+            document.getElementById('activeGameContent').classList.add('hidden');
+
+            let count = 3;
+            document.getElementById('countdownNum').textContent = count;
+            const cdTimer = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    document.getElementById('countdownNum').textContent = count;
+                } else {
+                    clearInterval(cdTimer);
+                    document.getElementById('countdownOverlay').classList.add('hidden');
+                    document.getElementById('activeGameContent').classList.remove('hidden');
+                    initGameSession(room.selectedCourse || 'math_basic');
+                }
+            }, 1000);
+        };
+
+        function initGameSession(courseId) {
+            const courseObj = window.COURSES.find(c => c.id === courseId) || window.COURSES[0];
+            document.getElementById('currentCourseBadge').textContent = courseObj.name;
+
+            gameQuestions = generateQuestionsForCourse(courseId, 10);
+            currentQIndex = 0;
+            correctCount = 0;
+            currentAnswer = '';
+
+            showView('game');
+            updateQuestionUI();
+
+            startTime = Date.now();
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const elapsed = (Date.now() - startTime) / 1000;
+                document.getElementById('gameTimer').textContent = `${elapsed.toFixed(1)}s`;
+            }, 100);
+        }
+
+        function generateQuestionsForCourse(courseId, count) {
+            const list = [];
+
+            if (courseId === 'geo_rivers') {
+                // Requirement ⑤: "日本の川" quiz course
+                const riverData = [
+                    { q: "日本でいちばん長い川は？", choices: ["信濃川", "利根川", "石狩川", "吉野川"], ans: "信濃川" },
+                    { q: "日本で流域面積がいちばん広い川は？", choices: ["利根川", "信濃川", "木曽川", "筑後川"], ans: "利根川" },
+                    { q: "四国でいちばん長い『四万十川』がある県は？", choices: ["高知県", "愛媛県", "徳島県", "香川県"], ans: "高知県" },
+                    { q: "北海道で一番長い川は？", choices: ["石狩川", "天塩川", "十勝川", "釧路川"], ans: "石狩川" },
+                    { q: "日本三大暴れ川『坂東太郎』の別名は？", choices: ["利根川", "筑後川", "吉野川", "富士川"], ans: "利根川" }
+                ];
+                for (let i = 0; i < count; i++) {
+                    const item = riverData[i % riverData.length];
+                    list.push({ expr: item.q, isChoice: true, choices: item.choices, ans: item.ans });
+                }
+            } else if (courseId === 'geo_pref') {
+                const prefData = [
+                    { q: "日本でいちばん面積が大きい都道府県は？", choices: ["北海道", "岩手県", "福島県", "長野県"], ans: "北海道" },
+                    { q: "富士山がある都道府県は静岡県とどこ？", choices: ["山梨県", "長野県", "神奈川県", "岐阜県"], ans: "山梨県" },
+                    { q: "琵琶湖（びわこ）がある都道府県は？", choices: ["滋賀県", "京都府", "兵庫県", "奈良県"], ans: "滋賀県" },
+                    { q: "通称『うどん県』と呼ばれる香川県がある地方は？", choices: ["四国地方", "中国地方", "九州地方", "近畿地方"], ans: "四国地方" }
+                ];
+                for (let i = 0; i < count; i++) {
+                    const item = prefData[i % prefData.length];
+                    list.push({ expr: item.q, isChoice: true, choices: item.choices, ans: item.ans });
+                }
+            } else if (courseId === 'math_kuku') {
+                for (let i = 0; i < count; i++) {
+                    const a = Math.floor(Math.random() * 9) + 1;
+                    const b = Math.floor(Math.random() * 9) + 1;
+                    list.push({ expr: `${a} × ${b}`, isChoice: false, ans: (a * b).toString() });
+                }
+            } else {
+                // Default basic math
+                for (let i = 0; i < count; i++) {
+                    const a = Math.floor(Math.random() * 15) + 1;
+                    const b = Math.floor(Math.random() * 15) + 1;
+                    list.push({ expr: `${a} + ${b}`, isChoice: false, ans: (a + b).toString() });
+                }
+            }
+            return list;
+        }
+
+        function updateQuestionUI() {
+            const q = gameQuestions[currentQIndex];
+            document.getElementById('qIndex').textContent = currentQIndex + 1;
+            document.getElementById('questionDisplay').textContent = q.expr + (q.isChoice ? '' : ' = ?');
+
+            const choiceContainer = document.getElementById('multipleChoiceContainer');
+            const keypadContainer = document.getElementById('keypadContainer');
+
+            if (q.isChoice) {
+                choiceContainer.classList.remove('hidden');
+                keypadContainer.classList.add('hidden');
+
+                choiceContainer.innerHTML = q.choices.map(c => `
+                    <button onclick="submitChoiceAnswer('${c}')" class="bounce-btn bg-white border-2 border-slate-200 hover:border-purple-400 text-slate-800 font-black py-3.5 px-4 rounded-xl shadow text-base text-center">
+                        ${c}
+                    </button>
+                `).join('');
+            } else {
+                choiceContainer.classList.add('hidden');
+                keypadContainer.classList.remove('hidden');
+                currentAnswer = '';
+                document.getElementById('answerInput').textContent = '';
+            }
+        }
+
+        window.appendNum = function(num) {
+            if (currentAnswer.length < 4) {
+                currentAnswer += num;
+                document.getElementById('answerInput').textContent = currentAnswer;
+            }
+        };
+
+        window.clearNum = function() {
+            currentAnswer = '';
+            document.getElementById('answerInput').textContent = '';
+        };
+
+        window.submitChoiceAnswer = function(choiceText) {
+            const q = gameQuestions[currentQIndex];
+            if (choiceText === q.ans) {
+                correctCount++;
+                playSound('correct');
+            } else {
+                playSound('wrong');
+            }
+            advanceQuestion();
+        };
+
+        window.submitAnswer = function() {
+            if (currentAnswer === '') return;
+            const q = gameQuestions[currentQIndex];
+            if (currentAnswer === q.ans) {
+                correctCount++;
+                playSound('correct');
+            } else {
+                playSound('wrong');
+            }
+            advanceQuestion();
+        };
+
+        function advanceQuestion() {
+            currentQIndex++;
+            if (currentQIndex < gameQuestions.length) {
+                updateQuestionUI();
+            } else {
+                endGame();
+            }
+        }
+
+        function endGame() {
+            clearInterval(timerInterval);
+            const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
+            const timeBonus = Math.max(0, Math.floor((60 - parseFloat(totalTime)) * 10));
+            const calculatedScore = (correctCount * 100) + timeBonus;
+
+            window.latestGameResult = {
+                score: calculatedScore,
+                correctCount: correctCount,
+                timeSec: parseFloat(totalTime)
+            };
+
+            playSound('fanfare');
+
+            if (isMultiplayerMode) {
+                window.submitMultiplayerScore(calculatedScore, correctCount, parseFloat(totalTime));
+            } else {
+                document.getElementById('finalScoreDisplay').textContent = calculatedScore.toLocaleString();
+                document.getElementById('finalCorrectCount').textContent = correctCount;
+                document.getElementById('finalTimeDisplay').textContent = totalTime;
+                showView('result');
+            }
+        }
+
+        // Requirement ⑥: Render Results for 2 players VS 3+ players
+        function renderMultiplayerResults(room) {
+            const players = Object.values(room.players || {})
+                .sort((a, b) => b.score - a.score || a.timeSec - b.timeSec);
+
+            const totalPlayers = players.length;
+            const myIndex = players.findIndex(p => p.id === window.myUserId);
+            const myRank = myIndex !== -1 ? myIndex + 1 : 1;
+            const myData = players[myIndex] || { score: 0 };
+
+            const twoPlayerBox = document.getElementById('twoPlayerOutcome');
+            const multiPlayerBox = document.getElementById('multiPlayerPodium');
+
+            // Requirement ⑥: 2 Player Outcome Display
+            if (totalPlayers === 2) {
+                twoPlayerBox.classList.remove('hidden');
+                multiPlayerBox.classList.add('hidden');
+
+                const p1 = players[0];
+                const p2 = players[1];
+                const textEl = document.getElementById('twoPlayerOutcomeText');
+
+                if (p1.score === p2.score) {
+                    textEl.textContent = "🤝 ひきわけ！";
+                    textEl.className = "text-5xl font-black tracking-wider text-amber-500";
+                } else if (p1.id === window.myUserId) {
+                    textEl.textContent = "🎉 勝ち！";
+                    textEl.className = "text-5xl font-black tracking-wider text-emerald-500";
+                } else {
+                    textEl.textContent = "😢 負け...";
+                    textEl.className = "text-5xl font-black tracking-wider text-rose-500";
+                }
+            } else {
+                // Requirement ⑥: 3+ Players Podium & Rank Display
+                twoPlayerBox.classList.add('hidden');
+                multiPlayerBox.classList.remove('hidden');
+
+                document.getElementById('myRankDisplay').textContent = `第 ${myRank} 位`;
+                document.getElementById('myScoreDisplay').textContent = `${myData.score.toLocaleString()} pt (${myData.correctCount || 0}/10問)`;
+
+                const top3 = players.slice(0, 3);
+                document.getElementById('top3ListContainer').innerHTML = top3.map((p, idx) => {
+                    let crown = `<span class="font-black text-slate-500 w-6">${idx + 1}</span>`;
+                    if (idx === 0) crown = `<i class="fa-solid fa-crown text-amber-400 text-xl w-6"></i>`;
+                    else if (idx === 1) crown = `<i class="fa-solid fa-medal text-slate-400 text-lg w-6"></i>`;
+                    else if (idx === 2) crown = `<i class="fa-solid fa-award text-amber-700 text-lg w-6"></i>`;
+
+                    return `
+                        <div class="bg-slate-50 rounded-xl p-3 border border-slate-200 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                ${crown}
+                                <span class="font-black text-slate-800 text-sm">${escapeHtml(p.name)}</span>
+                            </div>
+                            <span class="font-mono font-black text-amber-600 text-sm">${p.score.toLocaleString()} pt</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Requirement ⑦: Rematch Actions
+            const hostControls = document.getElementById('hostRematchControls');
+            const guestWaiting = document.getElementById('guestRematchWaiting');
+
+            if (window.isRoomHost) {
+                hostControls.classList.remove('hidden');
+                guestWaiting.classList.add('hidden');
+            } else {
+                hostControls.classList.add('hidden');
+                guestWaiting.classList.remove('hidden');
+            }
+        }
+
+        /* Navigation Helper */
+        window.showView = function(viewName) {
+            ['Home', 'BattleMenu', 'BattleRoom', 'Game', 'Result', 'CreateGroup', 'Ranking'].forEach(v => {
+                const el = document.getElementById(`view${v}`);
+                if (el) el.classList.add('hidden');
+            });
+
+            const target = document.getElementById(`view${viewName.charAt(0).toUpperCase() + viewName.slice(1)}`);
+            if (target) target.classList.remove('hidden');
+        };
+
+        /* Custom Modal Helper */
+        window.showCustomModal = function(msg) {
+            document.getElementById('customModalText').innerText = msg;
+            document.getElementById('customModal').classList.remove('hidden');
+        };
+
+        window.closeCustomModal = function() {
+            document.getElementById('customModal').classList.add('hidden');
+        };
+    </script>
+</body>
+</html>
