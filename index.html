@@ -997,7 +997,8 @@
 
             for (let rDisplay = 0; rDisplay < state.rows; rDisplay++) {
                 const r = isBbBottom ? (state.rows - 1 - rDisplay) : rDisplay;
-                for (let c = 0; c < state.cols; c++) {
+                for (let cDisplay = 0; cDisplay < state.cols; cDisplay++) {
+                    const c = isBbBottom ? (state.cols - 1 - cDisplay) : cDisplay;
                     const i = r * state.cols + c;
                     const btn = document.createElement('button');
                     const isDisabled = state.disabledSeats.includes(i);
@@ -1051,7 +1052,8 @@
 
             for (let rDisplay = 0; rDisplay < state.rows; rDisplay++) {
                 const r = isBbBottom ? (state.rows - 1 - rDisplay) : rDisplay;
-                for (let c = 0; c < state.cols; c++) {
+                for (let cDisplay = 0; cDisplay < state.cols; cDisplay++) {
+                    const c = isBbBottom ? (state.cols - 1 - cDisplay) : cDisplay;
                     const i = r * state.cols + c;
                     const btn = document.createElement('button');
                     const isDisabled = state.disabledSeats.includes(i);
@@ -1686,7 +1688,8 @@
 
                 for (let rDisplay = 0; rDisplay < state.rows; rDisplay++) {
                     const r = isBbBottom ? (state.rows - 1 - rDisplay) : rDisplay;
-                    for (let c = 0; c < state.cols; c++) {
+                    for (let cDisplay = 0; cDisplay < state.cols; cDisplay++) {
+                        const c = isBbBottom ? (state.cols - 1 - cDisplay) : cDisplay;
                         const i = r * state.cols + c;
                         const btn = document.createElement('button');
                         const isDisabled = state.disabledSeats.includes(i);
@@ -2438,7 +2441,8 @@
 
             for (let rDisplay = 0; rDisplay < state.rows; rDisplay++) {
                 const r = isBbBottom ? (state.rows - 1 - rDisplay) : rDisplay;
-                for (let c = 0; c < state.cols; c++) {
+                for (let cDisplay = 0; cDisplay < state.cols; cDisplay++) {
+                    const c = isBbBottom ? (state.cols - 1 - cDisplay) : cDisplay;
                     const index = r * state.cols + c;
                     const card = document.createElement('div');
                     const isDisabled = state.disabledSeats.includes(index);
@@ -2770,7 +2774,8 @@ ${frontDesc}
             for (let rDisplay = 0; rDisplay < state.rows; rDisplay++) {
                 const r = isBbBottom ? (state.rows - 1 - rDisplay) : rDisplay;
                 let rowText = [];
-                for (let c = 0; c < state.cols; c++) {
+                for (let cDisplay = 0; cDisplay < state.cols; cDisplay++) {
+                    const c = isBbBottom ? (state.cols - 1 - cDisplay) : cDisplay;
                     const idx = r * state.cols + c;
                     if (state.disabledSeats.includes(idx)) {
                         rowText.push("［ 通 路 ］");
@@ -2838,6 +2843,23 @@ ${frontDesc}
             showToast(`座席表を「4 席替えデータ」に保管しました（計${state.savedHistories.length}件）`, "success");
         }
 
+        function toggleHistoryBlackboardPosition(id) {
+            const item = state.savedHistories.find(h => h.id === id);
+            if (!item) return;
+            item.blackboardPosition = item.blackboardPosition === 'top' ? 'bottom' : 'top';
+            saveStateToStorage();
+            renderHistoryList();
+            showToast(`黒板の位置を「${item.blackboardPosition === 'top' ? '上側（前方）' : '下側（手前）'}」に変更しました`, "info");
+        }
+
+        function updateHistoryTitle(id, newTitle) {
+            const item = state.savedHistories.find(h => h.id === id);
+            if (!item) return;
+            item.title = newTitle.trim() || item.title;
+            saveStateToStorage();
+            showToast("データ名を変更しました", "success");
+        }
+
         function renderHistoryList() {
             const container = document.getElementById('historyListContainer');
             if (!container) return;
@@ -2860,46 +2882,28 @@ ${frontDesc}
 
             state.savedHistories.forEach((item, index) => {
                 const card = document.createElement('div');
-                card.className = "bg-slate-50 hover:bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs transition-all space-y-3.5";
-
-                const bbText = item.blackboardPosition === 'top' ? '上（前方）' : '下（手前）';
+                card.className = "bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm transition-all space-y-4";
 
                 card.innerHTML = `
-                    <div class="flex flex-wrap justify-between items-center gap-2 border-b border-slate-200 pb-3">
+                    <div class="flex flex-wrap justify-between items-center gap-2 border-b border-slate-100 pb-3">
                         <div class="flex items-center gap-2.5 flex-wrap">
                             <span class="bg-indigo-100 text-indigo-800 text-xs font-black px-2.5 py-1 rounded-lg">#${state.savedHistories.length - index}</span>
                             <input type="text" value="${escapeHtml(item.title)}" onchange="updateHistoryTitle('${item.id}', this.value)" class="font-extrabold text-sm sm:text-base text-slate-900 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:outline-none px-1.5 py-0.5 rounded transition">
                             <span class="text-xs text-slate-400 font-mono"><i class="fa-regular fa-clock"></i> ${item.timestamp}</span>
                         </div>
-                        <div class="flex items-center gap-1.5 flex-wrap">
-                            <span class="text-xs bg-slate-200/80 text-slate-700 font-bold px-2.5 py-1 rounded-lg">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-xs bg-slate-100 text-slate-700 font-bold px-2.5 py-1 rounded-lg">
                                 ${item.rows}行 × ${item.cols}列 (${item.studentCount}名)
                             </span>
-                            <span class="text-xs bg-emerald-100 text-emerald-800 font-bold px-2 py-1 rounded-lg">
-                                黒板: ${bbText}
-                            </span>
+                            <button type="button" onclick="toggleHistoryBlackboardPosition('${item.id}')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold py-1.5 px-3 rounded-xl transition flex items-center gap-1.5 shadow-2xs">
+                                <i class="fa-solid fa-chalkboard text-emerald-600"></i> <span id="histBbText_${item.id}">黒板: ${item.blackboardPosition === 'top' ? '上側 (前方)' : '下側 (手前)'}</span>
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Interactive Visual Preview Grid (Seat Swappable) -->
-                    <div class="bg-slate-800 rounded-xl p-3 overflow-x-auto flex flex-col gap-1.5">
-                        ${item.blackboardPosition === 'top' ? `
-                            <div class="text-center">
-                                <div class="bg-emerald-950/80 border border-emerald-600/40 text-emerald-200 text-[10px] font-black py-0.5 px-2 rounded inline-flex items-center gap-1 select-none">
-                                    <i class="fa-solid fa-chalkboard text-emerald-400"></i> 黒板 (前方)
-                                </div>
-                            </div>
-                        ` : ''}
-                        <div class="grid gap-1.5 min-w-[280px]" style="grid-template-columns: repeat(${item.cols}, minmax(0, 1fr));">
-                            ${renderHistoryMiniGridHTML(item)}
-                        </div>
-                        ${item.blackboardPosition === 'bottom' ? `
-                            <div class="text-center">
-                                <div class="bg-emerald-950/80 border border-emerald-600/40 text-emerald-200 text-[10px] font-black py-0.5 px-2 rounded inline-flex items-center gap-1 select-none">
-                                    <i class="fa-solid fa-chalkboard text-emerald-400"></i> 黒板 (手前)
-                                </div>
-                            </div>
-                        ` : ''}
+                    <!-- Visual Seating Chart (Exact Same Format as Tab 3) -->
+                    <div class="bg-slate-50 p-4 sm:p-6 rounded-2xl border border-slate-200 overflow-x-auto space-y-3">
+                        ${renderHistoryFullGridHTML(item)}
                     </div>
 
                     <!-- History Actions Bar -->
@@ -2924,59 +2928,110 @@ ${frontDesc}
             });
         }
 
-        function renderHistoryMiniGridHTML(item) {
-            let html = '';
-            const total = item.rows * item.cols;
+        function renderHistoryFullGridHTML(item) {
+            const isBbBottom = item.blackboardPosition === 'bottom';
             const isSelectedHere = state.selectedHistorySeat && state.selectedHistorySeat.historyId === item.id;
             const selectedIdx = isSelectedHere ? state.selectedHistorySeat.seatIndex : null;
-            const isBbBottom = item.blackboardPosition === 'bottom';
+
+            const bbBannerHTML = `
+                <div class="chalkboard-bg text-white py-2.5 px-4 rounded-xl text-center shadow-sm relative overflow-hidden select-none">
+                    <span class="text-sm sm:text-base font-black tracking-widest text-emerald-100">
+                        <i class="fa-solid fa-chalkboard mr-2 text-emerald-300"></i>黒 板 (${isBbBottom ? '手前 / 教卓側' : '前方'})
+                    </span>
+                </div>
+            `;
+
+            let gridCardsHTML = `<div class="grid gap-3 sm:gap-4 mx-auto min-w-[300px]" style="grid-template-columns: repeat(${item.cols}, minmax(100px, 1fr));">`;
 
             for (let rDisplay = 0; rDisplay < item.rows; rDisplay++) {
                 const r = isBbBottom ? (item.rows - 1 - rDisplay) : rDisplay;
-                for (let c = 0; c < item.cols; c++) {
-                    const i = r * item.cols + c;
-                    const isDisabled = (item.disabledSeats || []).includes(i);
-                    const student = item.layout[i];
-                    const isSelected = selectedIdx === i;
+                for (let cDisplay = 0; cDisplay < item.cols; cDisplay++) {
+                    const c = isBbBottom ? (item.cols - 1 - cDisplay) : cDisplay;
+                    const index = r * item.cols + c;
+                    const isDisabled = (item.disabledSeats || []).includes(index);
+                    const isSelected = selectedIdx === index;
+                    const student = item.layout[index];
+                    const genderLock = (item.seatGenderLocks || {})[index];
+
+                    const rowNum = r + 1;
+                    const colNum = c + 1;
 
                     if (isDisabled) {
-                        html += `
-                            <div class="aspect-square bg-slate-900 border border-slate-700 rounded-lg text-[9px] text-slate-600 flex items-center justify-center font-bold select-none cursor-not-allowed">
-                                ✕
+                        gridCardsHTML += `
+                            <div class="seat-card disabled-seat rounded-2xl p-2.5 flex flex-col items-center justify-center min-h-[90px] text-slate-400 font-mono text-xs border border-dashed border-slate-300 bg-slate-100/70 select-none">
+                                <span class="text-[10px] text-slate-400 mb-0.5">${rowNum}-${colNum}</span>
+                                <span class="text-xs font-bold text-slate-400">通路 / 不使用</span>
                             </div>
                         `;
-                    } else if (student) {
-                        const isMale = student.gender === 'male';
-                        const bgClass = isMale 
-                            ? 'bg-blue-600/90 hover:bg-blue-500 text-blue-50 border border-blue-400/50' 
-                            : 'bg-rose-600/90 hover:bg-rose-500 text-rose-50 border border-rose-400/50';
-                        const selectedStyle = isSelected 
-                            ? 'ring-3 ring-amber-400 bg-amber-400 text-indigo-950 font-black scale-105 z-10 shadow-lg border-amber-300' 
-                            : bgClass;
+                        continue;
+                    }
 
-                        html += `
-                            <button type="button" onclick="handleHistorySeatClick('${item.id}', ${i})" 
-                                class="aspect-square rounded-lg p-1 flex flex-col items-center justify-center text-[10px] sm:text-[11px] font-bold text-center leading-tight overflow-hidden transition-all duration-150 cursor-pointer shadow-2xs ${selectedStyle}" 
-                                title="${student.name} (タップして入れ替え)">
-                                <span class="truncate w-full font-extrabold select-none">${escapeHtml(student.name)}</span>
-                            </button>
+                    let cardBgClass = "bg-white border-slate-200 text-slate-400 shadow-sm";
+                    let genderIcon = "";
+
+                    if (student) {
+                        if (student.gender === 'male') {
+                            cardBgClass = "bg-male border-maleBorder text-blue-950 shadow-sm hover:border-blue-600";
+                            genderIcon = `<span class="text-[10px] font-bold text-blue-600 bg-blue-100/80 px-1 py-0.5 rounded">男</span>`;
+                        } else if (student.gender === 'female') {
+                            cardBgClass = "bg-female border-femaleBorder text-rose-950 shadow-sm hover:border-rose-600";
+                            genderIcon = `<span class="text-[10px] font-bold text-rose-600 bg-rose-100/80 px-1 py-0.5 rounded">女</span>`;
+                        }
+                    }
+
+                    const selectStyle = isSelected ? 'selected ring-4 ring-amber-400 bg-amber-50 border-amber-500 scale-102 z-10' : '';
+
+                    if (student) {
+                        let lockBadge = '';
+                        if (genderLock) {
+                            lockBadge = genderLock === 'male'
+                                ? '<span class="text-[9px] bg-blue-200/80 text-blue-900 font-bold px-1 rounded">男専</span>'
+                                : '<span class="text-[9px] bg-rose-200/80 text-rose-900 font-bold px-1 rounded">女専</span>';
+                        }
+
+                        gridCardsHTML += `
+                            <div onclick="handleHistorySeatClick('${item.id}', ${index})" class="seat-card border-2 rounded-2xl p-2.5 flex flex-col items-center justify-between min-h-[90px] cursor-pointer relative ${cardBgClass} ${selectStyle}">
+                                <div class="w-full flex justify-between items-center text-[10px] text-slate-400 font-mono">
+                                    <span>${rowNum}-${colNum}</span>
+                                    <div class="flex items-center gap-1">
+                                        ${lockBadge}
+                                        ${genderIcon}
+                                    </div>
+                                </div>
+                                <div class="font-extrabold text-sm sm:text-base text-center my-1 break-words line-clamp-2 text-slate-900">
+                                    ${escapeHtml(student.name)}
+                                </div>
+                                <div class="w-full flex justify-center items-center gap-1 min-h-[14px]"></div>
+                            </div>
                         `;
                     } else {
-                        const selectedStyle = isSelected 
-                            ? 'ring-3 ring-amber-400 bg-amber-300 text-indigo-950 font-black scale-105 z-10 shadow-lg' 
-                            : 'bg-slate-700/60 hover:bg-slate-600 text-slate-300 border border-slate-600';
+                        let lockBadge = '';
+                        if (genderLock) {
+                            lockBadge = genderLock === 'male'
+                                ? '<span class="text-[9px] bg-blue-100 text-blue-800 font-bold px-1.5 py-0.5 rounded">男子限定席</span>'
+                                : '<span class="text-[9px] bg-rose-100 text-rose-800 font-bold px-1.5 py-0.5 rounded">女子限定席</span>';
+                        }
 
-                        html += `
-                            <button type="button" onclick="handleHistorySeatClick('${item.id}', ${i})" 
-                                class="aspect-square rounded-lg text-[9px] flex items-center justify-center transition-all duration-150 cursor-pointer ${selectedStyle}" 
-                                title="空席 (タップして入れ替え)">
-                                <span class="select-none font-medium">空席</span>
-                            </button>
+                        gridCardsHTML += `
+                            <div onclick="handleHistorySeatClick('${item.id}', ${index})" class="seat-card border-2 rounded-2xl p-2.5 flex flex-col items-center justify-between min-h-[90px] cursor-pointer relative bg-white border-slate-200 text-slate-400 shadow-sm ${selectStyle}">
+                                <div class="w-full text-left text-[10px] text-slate-300 font-mono">${rowNum}-${colNum}</div>
+                                <div class="text-xs font-bold text-slate-400 my-auto flex flex-col items-center gap-1">
+                                    <span>空 席</span>
+                                    ${lockBadge}
+                                </div>
+                                <div class="w-full min-h-[14px]"></div>
+                            </div>
                         `;
                     }
                 }
             }
-            return html;
+            gridCardsHTML += `</div>`;
+
+            if (isBbBottom) {
+                return gridCardsHTML + bbBannerHTML;
+            } else {
+                return bbBannerHTML + gridCardsHTML;
+            }
         }
 
         function handleHistorySeatClick(historyId, seatIndex) {
@@ -3076,7 +3131,8 @@ ${frontDesc}
             for (let rDisplay = 0; rDisplay < item.rows; rDisplay++) {
                 const r = isBbBottom ? (item.rows - 1 - rDisplay) : rDisplay;
                 const rowCells = [];
-                for (let c = 0; c < item.cols; c++) {
+                for (let cDisplay = 0; cDisplay < item.cols; cDisplay++) {
+                    const c = isBbBottom ? (item.cols - 1 - cDisplay) : cDisplay;
                     const idx = r * item.cols + c;
                     if ((item.disabledSeats || []).includes(idx)) {
                         rowCells.push("通路");
